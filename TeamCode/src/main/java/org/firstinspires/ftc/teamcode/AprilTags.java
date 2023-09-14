@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -27,6 +28,8 @@ public class AprilTags extends LinearOpMode {
 
     int DETECT_ID = 1;
 
+    final double TICKS_PER_REVOLUTION = 537.7;
+
     AprilTagDetection detectTag = null;
 
     @Override
@@ -48,6 +51,11 @@ public class AprilTags extends LinearOpMode {
             }
         });
 
+        DcMotor motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
+        DcMotor motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
+        DcMotor motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+        DcMotor motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+
         telemetry.setMsTransmissionInterval(50);
 
         while (!isStarted() && !isStopRequested()) {
@@ -57,8 +65,7 @@ public class AprilTags extends LinearOpMode {
                 boolean tagFound = false;
 
                 for (AprilTagDetection tag : currentDetections) {
-                    if(tag.id == DETECT_ID)
-                    {
+                    if(tag.id == DETECT_ID) {
                         detectTag = tag;
                         tagFound = true;
                         break;
