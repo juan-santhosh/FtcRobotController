@@ -23,12 +23,22 @@ public class AprilTags extends LinearOpMode {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
 
-    double fx = 1445.26203593404, fy = 1458.020517466836, cx = 624.5189363050382, cy = 335.98784556504864;
-    double tagSize = 0.166;
+    DcMotor motorFrontLeft;
+    DcMotor motorFrontRight;
+    DcMotor motorBackLeft;
+    DcMotor motorBackRight;
 
     int DETECT_ID = 1;
 
+    final double TAG_SIZE = 0.166;
+
+    final double FX = 1445.26203593404;
+    final double FY = 1458.020517466836;
+    final double CX = 624.5189363050382;
+    final double CY = 335.98784556504864;
+
     final double TICKS_PER_REVOLUTION = 537.7;
+    final double WHEEL_CIRCUMFERENCE = Math.PI * 1;
 
     AprilTagDetection detectTag = null;
 
@@ -36,7 +46,7 @@ public class AprilTags extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagSize, fx, fy, cx, cy);
+        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(TAG_SIZE, FX, FY, CX, CY);
 
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -51,10 +61,15 @@ public class AprilTags extends LinearOpMode {
             }
         });
 
-        DcMotor motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
-        DcMotor motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
-        DcMotor motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
-        DcMotor motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
+        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
+        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+
+        motorFrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorFrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorBackLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorBackRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         telemetry.setMsTransmissionInterval(50);
 
@@ -112,7 +127,35 @@ public class AprilTags extends LinearOpMode {
         if (detectTag == null) {
             // Insert default autonomous code as tag wasn't detected.
         } else {
-            // Insert autonomous code using detected tag.
+            motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorBackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            while (detectTag.pose.x != 0) {
+                double rotationsNeeded = detectTag.pose.x / WHEEL_CIRCUMFERENCE;
+                int encoderTarget = (int) (rotationsNeeded * TICKS_PER_REVOLUTION);
+
+                motorFrontLeft.setTargetPosition(encoderTarget);
+                motorFrontRight.setTargetPosition(-encoderTarget);
+                motorBackLeft.setTargetPosition(-encoderTarget);
+                motorBackRight.setTargetPosition(encoderTarget);
+            }
+
+            motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorBackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            while (detectTag.pose.y > 0.2) {
+                double rotationsNeeded = detectTag.pose.y / WHEEL_CIRCUMFERENCE;
+                int encoderTarget = (int) (rotationsNeeded * TICKS_PER_REVOLUTION);
+
+                motorFrontLeft.setTargetPosition(encoderTarget);
+                motorFrontRight.setTargetPosition(encoderTarget);
+                motorBackLeft.setTargetPosition(encoderTarget);
+                motorBackRight.setTargetPosition(encoderTarget);
+            }
         }
 
         while (opModeIsActive()) { sleep(20); } // Temporarily keeps program running.
@@ -129,8 +172,8 @@ public class AprilTags extends LinearOpMode {
         telemetry.addLine(String.format("Translation Y: %.2f metres", detection.pose.y));
         telemetry.addLine(String.format("Translation Z: %.2f metres", detection.pose.z));
 
-        telemetry.addLine(String.format("Rotation Y: %.2f degrees", rot.firstAngle));
         telemetry.addLine(String.format("Rotation X: %.2f degrees", rot.secondAngle));
+        telemetry.addLine(String.format("Rotation Y: %.2f degrees", rot.firstAngle));
         telemetry.addLine(String.format("Rotation Z: %.2f degrees", rot.thirdAngle));
     }
 }
