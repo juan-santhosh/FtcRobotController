@@ -24,35 +24,33 @@ import java.util.ArrayList;
 @TeleOp
 public class Main extends LinearOpMode {
     OpenCvCamera camera;
+
+    AprilTagDetection detectTag = null;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
+
+    DcMotor motorSlider;
 
     DcMotorEx motorFrontLeft;
     DcMotorEx motorFrontRight;
     DcMotorEx motorBackLeft;
     DcMotorEx motorBackRight;
 
-    DcMotor motorSlider;
-
     Servo servoClaw;
 
     double servoPos = 0;
     final double SERVO_INCREMENT = 0.005;
 
-    int DETECT_ID = 1;
-
+    int detectId = 1;
     final double TAG_SIZE = 0.166;
 
     final double FX = 1445.26203593404;
     final double FY = 1458.020517466836;
-    final double CX = 624.5189363050382;
+    final double CX = 624.51893630503820;
     final double CY = 335.98784556504864;
 
+    final double Y_TARGET = 0.2;
     final double TICKS_PER_REVOLUTION = 537.7;
     final double WHEEL_CIRCUMFERENCE = Math.PI * 0.096;
-
-    final double Y_TARGET = 0.2;
-
-    AprilTagDetection detectTag = null;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -117,7 +115,7 @@ public class Main extends LinearOpMode {
                 boolean tagFound = false;
 
                 for (AprilTagDetection tag : currentDetections) {
-                    if (tag.id == DETECT_ID) {
+                    if (tag.id == detectId) {
                         detectTag = tag;
                         tagFound = true;
                         break;
