@@ -48,7 +48,7 @@ public class Main extends LinearOpMode {
     final double CY = 335.98784556504864;
 
     final double TICKS_PER_REVOLUTION = 537.7;
-    final double WHEEL_CIRCUMFERENCE = Math.PI * 0.095;
+    final double WHEEL_CIRCUMFERENCE = Math.PI * 0.096;
 
     final double Y_TARGET = 0.2;
 
