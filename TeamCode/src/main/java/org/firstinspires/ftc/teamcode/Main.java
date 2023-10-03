@@ -198,19 +198,12 @@ public class Main extends LinearOpMode {
 
         telemetry.addLine(String.format("\nDetected tag ID: %d", detection.id));
 
-        telemetry.addLine(String.format("Translation X: %.2f metres", detection.pose.x));
+        telemetry.addLine(String.format("\nTranslation X: %.2f metres", detection.pose.x));
         telemetry.addLine(String.format("Translation Y: %.2f metres", detection.pose.y));
         telemetry.addLine(String.format("Translation Z: %.2f metres", detection.pose.z));
 
-        telemetry.addLine(String.format("Rotation X: %.2f degrees", rot.secondAngle));
+        telemetry.addLine(String.format("\nRotation X: %.2f degrees", rot.secondAngle));
         telemetry.addLine(String.format("Rotation Y: %.2f degrees", rot.firstAngle));
         telemetry.addLine(String.format("Rotation Z: %.2f degrees", rot.thirdAngle));
-    }
-
-    void resetEncoders() {
-        motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorBackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
