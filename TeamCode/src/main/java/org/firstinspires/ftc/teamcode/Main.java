@@ -94,6 +94,11 @@ public class Main extends LinearOpMode {
         motorBackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         motorBackRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         motorFrontLeft.setVelocity(50);
         motorFrontRight.setVelocity(50);
         motorBackLeft.setVelocity(50);
@@ -171,11 +176,6 @@ public class Main extends LinearOpMode {
                 motorFrontRight.setTargetPosition(encoderTarget);
                 motorBackLeft.setTargetPosition(encoderTarget);
                 motorBackRight.setTargetPosition(encoderTarget);
-
-                motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
         }
 
