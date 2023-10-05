@@ -37,11 +37,15 @@ public class Main extends LinearOpMode {
 
     Servo servoClaw;
 
-    double servoPos = 0;
-    final double SERVO_INCREMENT = 0.005;
-
     int detectId = 1;
+    int encoderTarget = 0;
+    int numFramesWithoutDetection = 0;
+
+    double servoPos = 0;
+    double rotationsNeeded;
+
     final double TAG_SIZE = 0.166;
+    final double SERVO_INCREMENT = 0.005;
 
     final double FX = 1445.26203593404;
     final double FY = 1458.020517466836;
@@ -51,6 +55,11 @@ public class Main extends LinearOpMode {
     final double Y_TARGET = 0.2;
     final double TICKS_PER_REVOLUTION = 537.7;
     final double WHEEL_CIRCUMFERENCE = Math.PI * 0.096;
+
+    final float DECIMATION_HIGH = 3;
+    final float DECIMATION_LOW = 2;
+    final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
+    final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -163,21 +172,74 @@ public class Main extends LinearOpMode {
             telemetry.addLine("No april tag detected.");
             telemetry.update();
         } else {
-            if (detectTag.pose.y > Y_TARGET) {
-                telemetry.addLine("April tag detected, now moving.");
-                telemetry.update();
+            telemetry.addLine("April tag detected, now moving.");
+            telemetry.update();
 
-                double rotationsNeeded = (detectTag.pose.y - Y_TARGET) / WHEEL_CIRCUMFERENCE;
-                int encoderTarget = (int) (rotationsNeeded * TICKS_PER_REVOLUTION);
+            if (detectTag.pose.x != 0) {
+                rotationsNeeded = detectTag.pose.x / WHEEL_CIRCUMFERENCE;
+                encoderTarget = (int) (rotationsNeeded * TICKS_PER_REVOLUTION);
 
                 motorFrontLeft.setTargetPosition(encoderTarget);
-                motorFrontRight.setTargetPosition(encoderTarget);
-                motorBackLeft.setTargetPosition(encoderTarget);
+                motorFrontRight.setTargetPosition(-encoderTarget);
+                motorBackLeft.setTargetPosition(-encoderTarget);
                 motorBackRight.setTargetPosition(encoderTarget);
+            } else {
+                if (detectTag.pose.y > Y_TARGET) {
+                    rotationsNeeded = (detectTag.pose.y - Y_TARGET) / WHEEL_CIRCUMFERENCE;
+                    encoderTarget = (int) (rotationsNeeded * TICKS_PER_REVOLUTION);
+
+                    motorFrontLeft.setTargetPosition(encoderTarget);
+                    motorFrontRight.setTargetPosition(encoderTarget);
+                    motorBackLeft.setTargetPosition(encoderTarget);
+                    motorBackRight.setTargetPosition(encoderTarget);
+                }
             }
         }
 
         while (opModeIsActive()) {
+            ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
+
+            if (detections != null) {
+                telemetry.addData("FPS", camera.getFps());
+                telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
+                telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
+
+                if (detections.size() == 0) {
+                    numFramesWithoutDetection++;
+
+                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
+                        aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
+                    }
+                } else {
+                    numFramesWithoutDetection = 0;
+
+                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) {
+                        aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                    }
+
+                    for (AprilTagDetection detection : detections) {
+                        Orientation rot = Orientation.getOrientation(detection.pose.R, AxesReference.INTRINSIC, AxesOrder.YXZ, AngleUnit.DEGREES);
+
+                        telemetry.addLine(String.format("\nDetected tag ID: %d", detection.id));
+
+                        telemetry.addLine(String.format("\nTranslation X: %.2f metres", detection.pose.x));
+                        telemetry.addLine(String.format("Translation Y: %.2f metres", detection.pose.y));
+                        telemetry.addLine(String.format("Translation Z: %.2f metres", detection.pose.z));
+
+                        telemetry.addLine(String.format("\nRotation X: %.2f degrees", rot.secondAngle));
+                        telemetry.addLine(String.format("Rotation Y: %.2f degrees", rot.firstAngle));
+                        telemetry.addLine(String.format("Rotation Z: %.2f degrees", rot.thirdAngle));
+                    }
+                }
+            } else {
+                encoderTarget = (int) (TICKS_PER_REVOLUTION);
+
+                motorFrontLeft.setTargetPosition(encoderTarget);
+                motorFrontRight.setTargetPosition(-encoderTarget);
+                motorBackLeft.setTargetPosition(encoderTarget);
+                motorBackRight.setTargetPosition(-encoderTarget);
+            }
+
             motorSlider.setPower(gamepad2.right_stick_y);
 
             if (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) {
@@ -187,6 +249,9 @@ public class Main extends LinearOpMode {
             }
 
             servoClaw.setPosition(servoPos);
+
+            telemetry.update();
+            sleep(20);
         }
     }
 
