@@ -25,7 +25,6 @@ public class DriverControl extends LinearOpMode {
     double intakePower = 0;
 
     final double SERVO_INCREMENT = 0.005;
-    final double TICKS_PER_REVOLUTION = 537.7;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -49,17 +48,17 @@ public class DriverControl extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            sliderPos += (int) (-gamepad2.right_stick_y * TICKS_PER_REVOLUTION);
-            intakePower = gamepad2.a ? 1 : (gamepad2.b ? 0 : intakePower);
-            servoPos += (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) ? SERVO_INCREMENT : ((gamepad2.left_trigger > 0.1 && servoPos > SERVO_INCREMENT) ? -SERVO_INCREMENT : 0);
-
+            sliderPos += (int) (-gamepad2.right_stick_y);
             motorSlider.setTargetPosition(sliderPos);
-            motorIntake.setPower(intakePower);
+
+            servoPos += (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) ? SERVO_INCREMENT : ((gamepad2.left_trigger > 0.1 && servoPos > SERVO_INCREMENT) ? -SERVO_INCREMENT : 0);
             servoClaw.setPosition(servoPos);
+
+            motorIntake.setPower(gamepad2.a ? 1 : (gamepad2.b ? 0 : intakePower));
 
             double x = gamepad1.left_stick_x, y = gamepad1.left_stick_y, rotation = -gamepad1.right_stick_x;
             double resultant = Math.hypot(x, y), resultantAngle = Math.atan2(y, x);
-            double possibleAbsolutePower = resultant + Math.abs(rotation);
+            double possibleAbsPower = resultant + Math.abs(rotation);
             double possiblePower = resultant + rotation;
 
             double xComponent = Math.sin(resultantAngle - Math.PI/4), yComponent = Math.cos(resultantAngle - Math.PI/4);
@@ -73,7 +72,7 @@ public class DriverControl extends LinearOpMode {
             double backLeftPower   = resultant * xComponentRatio + rotation;
             double backRightPower  = resultant * yComponentRatio - rotation;
 
-            if (possibleAbsolutePower > 1) {
+            if (possibleAbsPower > 1) {
                 frontLeftPower  /= possiblePower;
                 frontRightPower /= possiblePower;
                 backLeftPower   /= possiblePower;
