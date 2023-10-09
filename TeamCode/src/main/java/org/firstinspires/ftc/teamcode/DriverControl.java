@@ -14,6 +14,19 @@ public class DriverControl extends LinearOpMode {
     DcMotor motorBackLeft;
     DcMotor motorBackRight;
 
+    DcMotor motorIntake;
+    DcMotorEx motorSlider;
+
+    Servo servoClaw;
+
+    int sliderPos = 0;
+
+    double servoPos = 0;
+    double intakePower = 0;
+
+    final double SERVO_INCREMENT = 0.005;
+    final double TICKS_PER_REVOLUTION = 537.7;
+
     @Override
     public void runOpMode() throws InterruptedException {
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
@@ -21,11 +34,29 @@ public class DriverControl extends LinearOpMode {
         motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
         motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
 
+        motorIntake = hardwareMap.dcMotor.get("motorIntake");
+
+        motorSlider = hardwareMap.get(DcMotorEx.class, "motorSlider");
+        motorSlider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorSlider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorSlider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorSlider.setVelocity(50);
+
+        servoClaw = hardwareMap.servo.get("servoClaw");
+
         waitForStart();
 
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
+            sliderPos += (int) (-gamepad2.right_stick_y * TICKS_PER_REVOLUTION);
+            intakePower = gamepad2.a ? 1 : (gamepad2.b ? 0 : intakePower);
+            servoPos += (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) ? SERVO_INCREMENT : ((gamepad2.left_trigger > 0.1 && servoPos > SERVO_INCREMENT) ? -SERVO_INCREMENT : 0);
+
+            motorSlider.setTargetPosition(sliderPos);
+            motorIntake.setPower(intakePower);
+            servoClaw.setPosition(servoPos);
+
             double x = gamepad1.left_stick_x, y = gamepad1.left_stick_y, rotation = -gamepad1.right_stick_x;
             double resultant = Math.hypot(x, y), resultantAngle = Math.atan2(y, x);
             double possibleAbsolutePower = resultant + Math.abs(rotation);
