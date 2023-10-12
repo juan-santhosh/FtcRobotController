@@ -15,7 +15,8 @@ public class DriverControl extends LinearOpMode {
     DcMotor motorBackRight;
 
     DcMotor motorIntake;
-    DcMotorEx motorSlider;
+    DcMotorEx motorSliderLeft;
+    DcMotorEx motorSliderRight;
 
     Servo servoClaw;
 
@@ -35,11 +36,17 @@ public class DriverControl extends LinearOpMode {
 
         motorIntake = hardwareMap.dcMotor.get("motorIntake");
 
-        motorSlider = hardwareMap.get(DcMotorEx.class, "motorSlider");
-        motorSlider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorSlider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorSlider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorSlider.setVelocity(50);
+        motorSliderLeft = hardwareMap.get(DcMotorEx.class, "motorSliderLeft");
+        motorSliderRight = hardwareMap.get(DcMotorEx.class, "motorSliderRight");
+
+        motorSliderLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorSliderRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        motorSliderLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorSliderRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        motorSliderLeft.setVelocity(50);
+        motorSliderRight.setVelocity(50);
 
         servoClaw = hardwareMap.servo.get("servoClaw");
 
@@ -48,8 +55,13 @@ public class DriverControl extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            sliderPos += (int) (-gamepad2.right_stick_y);
-            motorSlider.setTargetPosition(sliderPos);
+            sliderPos += (int) (-gamepad2.right_stick_y * 40);
+            telemetry.addData("Slider Pos", sliderPos);
+            motorSliderLeft.setTargetPosition(sliderPos);
+            motorSliderRight.setTargetPosition(sliderPos);
+
+            motorSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             servoPos += (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) ? SERVO_INCREMENT : ((gamepad2.left_trigger > 0.1 && servoPos > SERVO_INCREMENT) ? -SERVO_INCREMENT : 0);
             servoClaw.setPosition(servoPos);
