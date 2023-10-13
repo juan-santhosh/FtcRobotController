@@ -15,8 +15,8 @@ public class DriverControl extends LinearOpMode {
     DcMotor motorBackRight;
 
     DcMotor motorIntake;
-    DcMotorEx motorSliderLeft;
-    DcMotorEx motorSliderRight;
+    DcMotorEx motorLeftViper;
+    DcMotorEx motorRightViper;
 
     Servo servoClaw;
 
@@ -36,17 +36,17 @@ public class DriverControl extends LinearOpMode {
 
         motorIntake = hardwareMap.dcMotor.get("motorIntake");
 
-        motorSliderLeft = hardwareMap.get(DcMotorEx.class, "motorSliderLeft");
-        motorSliderRight = hardwareMap.get(DcMotorEx.class, "motorSliderRight");
+        motorLeftViper = hardwareMap.get(DcMotorEx.class, "motorLeftViper");
+        motorRightViper = hardwareMap.get(DcMotorEx.class, "motorRightViper");
 
-        motorSliderLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorSliderRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorLeftViper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorRightViper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motorSliderLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorSliderRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorLeftViper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorRightViper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        motorSliderLeft.setVelocity(50);
-        motorSliderRight.setVelocity(50);
+        motorLeftViper.setVelocity(50);
+        motorRightViper.setVelocity(50);
 
         servoClaw = hardwareMap.servo.get("servoClaw");
 
@@ -57,11 +57,11 @@ public class DriverControl extends LinearOpMode {
         while (opModeIsActive()) {
             sliderPos += (int) (-gamepad2.right_stick_y * 40);
             telemetry.addData("Slider Pos", sliderPos);
-            motorSliderLeft.setTargetPosition(sliderPos);
-            motorSliderRight.setTargetPosition(sliderPos);
+            motorLeftViper.setTargetPosition(sliderPos);
+            motorRightViper.setTargetPosition(sliderPos);
 
-            motorSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motorSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorLeftViper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorRightViper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             servoPos += (gamepad2.right_trigger > 0.1 && servoPos < (1 - SERVO_INCREMENT)) ? SERVO_INCREMENT : ((gamepad2.left_trigger > 0.1 && servoPos > SERVO_INCREMENT) ? -SERVO_INCREMENT : 0);
             servoClaw.setPosition(servoPos);
