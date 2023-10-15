@@ -111,14 +111,26 @@ public class DriverControl extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (gamepad2.right_trigger > 0.1) {
-                motorSliderLeft.setTargetPosition(-538);
-                sliderPower = gamepad2.right_trigger;
+                motorSliderLeft.setTargetPosition(-1613);
+                motorSliderRight.setTargetPosition(1613);
+
+                motorSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                motorSliderLeft.setPower(gamepad2.right_trigger);
+                motorSliderRight.setPower(gamepad2.right_trigger);
+
             } else if (gamepad2.left_trigger > 0.1) {
                 motorSliderLeft.setTargetPosition(0);
-                sliderPower = gamepad2.left_trigger;
-            }
+                motorSliderRight.setTargetPosition(0);
 
-            motorSliderLeft.setPower(sliderPower);
+                motorSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                motorSliderLeft.setPower(gamepad2.left_trigger);
+                motorSliderRight.setPower(gamepad2.left_trigger);
+
+            }
 
             telemetry.addData("Desired L", motorSliderLeft.getTargetPosition());
             telemetry.addData("Actual L", motorSliderLeft.getCurrentPosition());
