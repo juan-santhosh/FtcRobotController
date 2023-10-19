@@ -112,17 +112,13 @@ public class DriverControl extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (gamepad2.right_trigger > 0.1) {
-                if (sliderPos < MAX_SLIDER) {
-                    sliderPos += gamepad2.right_trigger * 0.001;
-                }
+                sliderPos += sliderPos < MAX_SLIDER ? gamepad2.right_trigger * 0.001 : 0;
                 sliderPower = gamepad2.right_trigger;
             } else if (gamepad2.left_trigger > 0.1) {
-                if (sliderPos > MIN_SLIDER) {
-                    sliderPos -= gamepad2.left_trigger * 0.001;
-                }
+                sliderPos -= sliderPos > MIN_SLIDER ? gamepad2.left_trigger * 0.001 : 0;
                 sliderPower = gamepad2.left_trigger;
             } else {
-                sliderPower = 0.1;
+                sliderPower = sliderPos > 0 ? 0.1 : 0;
             }
 
             motorSliderLeft.setTargetPosition((int) (-sliderPos));
