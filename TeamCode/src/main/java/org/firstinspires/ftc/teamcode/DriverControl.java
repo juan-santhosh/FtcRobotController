@@ -33,7 +33,7 @@ public class DriverControl extends LinearOpMode {
     double currentBL, currentBR, currentFL, currentFR;
     double smoothBL, smoothBR, smoothFL, smoothFR;
 
-    final int MAX_SLIDER = -4820;
+    final int MAX_SLIDER = 4820;
     final int MIN_SLIDER = 0;
 
     final double SERVO_INCREMENT = 0.005;
@@ -111,7 +111,7 @@ public class DriverControl extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (gamepad2.right_trigger > 0.1) {
-                if (sliderPos < MAX_SLIDER) { sliderPos += gamepad2.right_trigger; }
+                if (sliderPos < MAX_SLIDER) { sliderPos += gamepad2.right_trigger * 0.001; }
 
                 motorSliderLeft.setTargetPosition((int) (-sliderPos));
                 motorSliderRight.setTargetPosition((int) (sliderPos));
@@ -123,7 +123,7 @@ public class DriverControl extends LinearOpMode {
                 motorSliderRight.setPower(gamepad2.right_trigger);
 
             } else if (gamepad2.left_trigger > 0.1) {
-                if (sliderPos > MIN_SLIDER) { sliderPos -= gamepad2.left_trigger; }
+                if (sliderPos > MIN_SLIDER) { sliderPos -= gamepad2.left_trigger * 0.001; }
 
                 motorSliderLeft.setTargetPosition((int) (-sliderPos));
                 motorSliderRight.setTargetPosition((int) (sliderPos));
