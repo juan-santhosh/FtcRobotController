@@ -167,21 +167,21 @@ public class DriverControl extends LinearOpMode {
             double rotation = -gamepad1.right_stick_x;
 
             double resultant = Math.hypot(x, y);
-            double resultantAngle = Math.atan2(y, x);
+            double resultantAngle = Math.atan2(y, x) - Math.PI/4;
             double possiblePower = resultant + rotation;
             double possibleAbsPower = resultant + Math.abs(rotation);
 
-            double xComponent = Math.sin(resultantAngle - Math.PI/4);
-            double yComponent = Math.cos(resultantAngle - Math.PI/4);
+            double xComponent = Math.sin(resultantAngle);
+            double yComponent = Math.cos(resultantAngle);
             double maxComponent = Math.max(Math.abs(xComponent), Math.abs(yComponent));
 
-            double xComponentRatio = xComponent / maxComponent;
-            double yComponentRatio = yComponent / maxComponent;
+            double xRatioResultant = resultant * xComponent / maxComponent;
+            double yRatioResultant = resultant * yComponent / maxComponent;
 
-            double backLeftPower   = resultant * xComponentRatio + rotation;
-            double backRightPower  = resultant * yComponentRatio - rotation;
-            double frontLeftPower  = resultant * yComponentRatio + rotation;
-            double frontRightPower = resultant * xComponentRatio - rotation;
+            double backLeftPower   = xRatioResultant + rotation;
+            double backRightPower  = yRatioResultant - rotation;
+            double frontLeftPower  = yRatioResultant + rotation;
+            double frontRightPower = xRatioResultant - rotation;
 
             if (possibleAbsPower > 1) {
                 frontLeftPower  /= possiblePower;
