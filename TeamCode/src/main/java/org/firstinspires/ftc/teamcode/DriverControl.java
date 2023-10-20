@@ -38,6 +38,7 @@ public class DriverControl extends LinearOpMode {
     final int MIN_SLIDER = 50;
 
     final double SERVO_INCREMENT = 0.005;
+    final double SLIDER_SENSITIVITY = 0.001;
 
     final double MAX_CLAW = 0.22;
     final double MIN_CLAW = 0;
@@ -62,17 +63,17 @@ public class DriverControl extends LinearOpMode {
     }
 
     public void intake() {
-        servoBaseLeft.setPosition(0);
-        servoBaseRight.setPosition(0);
         servoPitch.setPosition(0);
-
-        sleep(1000);
-
-        servoClaw.setPosition(0);
-
-        sleep(1000);
-
         servoBaseLeft.setPosition(0);
+        servoBaseRight.setPosition(1);
+
+        sleep(500);
+
+        servoClaw.setPosition(MAX_CLAW);
+
+        sleep(500);
+
+        servoBaseLeft.setPosition(1);
         servoBaseRight.setPosition(0);
     }
 
@@ -112,10 +113,10 @@ public class DriverControl extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (gamepad2.right_trigger > 0.1) {
-                sliderPos += sliderPos < MAX_SLIDER ? gamepad2.right_trigger * 0.001 : 0;
+                sliderPos += sliderPos < MAX_SLIDER ? gamepad2.right_trigger * SLIDER_SENSITIVITY : 0;
                 sliderPower = gamepad2.right_trigger;
             } else if (gamepad2.left_trigger > 0.1) {
-                sliderPos -= sliderPos > MIN_SLIDER ? gamepad2.left_trigger * 0.001 : 0;
+                sliderPos -= sliderPos > MIN_SLIDER ? gamepad2.left_trigger * SLIDER_SENSITIVITY : 0;
                 sliderPower = gamepad2.left_trigger;
             } else {
                 sliderPower = sliderPos != motorSliderRight.getCurrentPosition() ? 0.1 : 0;
@@ -149,7 +150,7 @@ public class DriverControl extends LinearOpMode {
             telemetry.addData("Actual Pitch", servoPitch.getPosition());
 
             baseLeftPos += (gamepad2.left_stick_y > 0.1 && baseLeftPos < MAX_BASE) ? SERVO_INCREMENT : ((gamepad2.left_stick_y < -0.1 && baseLeftPos > MIN_BASE) ? -SERVO_INCREMENT : 0);
-            baseRightPos += 1.0 - baseLeftPos; // (gamepad2.left_stick_y < -0.1 && baseRightPos < MAX_BASE) ? SERVO_INCREMENT : ((gamepad2.left_stick_y > 0.1 && baseRightPos > MIN_BASE) ? -SERVO_INCREMENT : 0);
+            baseRightPos = 1.0 - baseLeftPos; // (gamepad2.left_stick_y < -0.1 && baseRightPos < MAX_BASE) ? SERVO_INCREMENT : ((gamepad2.left_stick_y > 0.1 && baseRightPos > MIN_BASE) ? -SERVO_INCREMENT : 0);
 
             servoBaseLeft.setPosition(baseLeftPos);
             servoBaseRight.setPosition(baseRightPos);
