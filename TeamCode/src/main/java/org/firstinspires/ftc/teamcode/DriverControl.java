@@ -23,22 +23,16 @@ public class DriverControl extends LinearOpMode {
     Servo servoBaseLeft;
     Servo servoBaseRight;
 
-    double sliderPower = 0;
     double sliderPos = 0;
+    double sliderPower = 0;
 
     double clawPos = 0;
     double pitchPos = 0.55;
     double baseLeftPos = 0.8;
     double baseRightPos = 0.2;
 
-    double currentBL, currentBR, currentFL, currentFR;
-    double smoothBL, smoothBR, smoothFL, smoothFR;
-
     final int MAX_SLIDER = 3100;
-    final int MIN_SLIDER = 50;
-
-    final double SERVO_INCREMENT = 0.005;
-    final double SLIDER_SENSITIVITY = 10;
+    final int MIN_SLIDER = 0;
 
     final double MAX_CLAW = 0.22;
     final double MIN_CLAW = 0;
@@ -49,24 +43,14 @@ public class DriverControl extends LinearOpMode {
     final double MAX_BASE = 1;
     final double MIN_BASE = 0;
 
-    final double MAX_POWER_DIFFERENCE = 0.7;
-
-    private double smoothPower(double newPower, double currentPower) {
-        double outputPower = newPower;
-        double powerDifference = newPower - currentPower;
-
-        if (Math.abs(powerDifference) > 0.1) {
-            outputPower = currentPower + MAX_POWER_DIFFERENCE * powerDifference / Math.abs(powerDifference);
-        }
-
-        return outputPower;
-    }
+    final double SERVO_INCREMENT = 0.005;
+    final double SLIDER_SENSITIVITY = 10;
 
     public void grabPixel() {
         baseLeftPos = 0;
         baseRightPos = 1.0;
         pitchPos = 0.61;
-        clawPos = 0.1;
+        clawPos = 0.11;
     }
 
     public void retractArm() {
@@ -185,26 +169,16 @@ public class DriverControl extends LinearOpMode {
             double frontRightPower = xResultant - rotation;
 
             if (possibleAbsPower > 1) {
-                frontLeftPower  /= possiblePower;
-                frontRightPower /= possiblePower;
                 backLeftPower   /= possiblePower;
                 backRightPower  /= possiblePower;
+                frontLeftPower  /= possiblePower;
+                frontRightPower /= possiblePower;
             }
 
-            smoothBL = smoothPower(backLeftPower, currentFL);
-            smoothBR = smoothPower(backRightPower, currentFR);
-            smoothFL = smoothPower(frontLeftPower, currentBL);
-            smoothFR = smoothPower(frontRightPower, currentBR);
-
-            motorBackLeft.setPower(smoothBL);
-            motorBackRight.setPower(smoothBR);
-            motorFrontLeft.setPower(smoothFR);
-            motorFrontRight.setPower(smoothFR);
-
-            currentBL = smoothBL;
-            currentBR = smoothBR;
-            currentFL = smoothFL;
-            currentFR = smoothFR;
+            motorBackLeft.setPower(backLeftPower);
+            motorBackRight.setPower(backRightPower);
+            motorFrontLeft.setPower(frontLeftPower);
+            motorFrontRight.setPower(frontRightPower);
 
             telemetry.update();
         }
