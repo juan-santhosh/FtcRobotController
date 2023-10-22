@@ -44,18 +44,20 @@ public class DriverControl extends LinearOpMode {
     final double MIN_BASE = 0;
 
     final double SERVO_INCREMENT = 0.005;
+    final double PRESET_INCREMENT = 0.05;
     final double SLIDER_SENSITIVITY = 10;
 
     public void grabPixel() {
-        baseLeftPos = 0.1;
-        baseRightPos = 0.9;
+        baseLeftPos += baseLeftPos > 0 ? -PRESET_INCREMENT : 0;
+        baseRightPos += baseRightPos < 1 ? PRESET_INCREMENT : 0;
+
         pitchPos = 0.61;
         clawPos = 0.11;
     }
 
     public void retractArm() {
-        baseLeftPos = 0.8;
-        baseRightPos = 0.2;
+        baseLeftPos += baseLeftPos < 0.8 ? PRESET_INCREMENT : 0;
+        baseRightPos += baseRightPos > 0.2 ? -PRESET_INCREMENT : 0;
     }
 
     @Override
