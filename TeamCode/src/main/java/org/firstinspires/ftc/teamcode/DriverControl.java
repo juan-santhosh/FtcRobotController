@@ -66,6 +66,7 @@ public class DriverControl extends LinearOpMode {
         baseLeftPos = 0;
         baseRightPos = 1.0;
         pitchPos = 0.61;
+        clawPos = 0.1;
     }
 
     public void retractArm() {
