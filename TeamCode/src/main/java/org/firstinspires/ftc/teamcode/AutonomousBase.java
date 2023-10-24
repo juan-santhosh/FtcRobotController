@@ -24,11 +24,6 @@ import org.firstinspires.ftc.vision.VisionPortal;
 
 @TeleOp
 public class AutonomousBase extends LinearOpMode {
-    DcMotorEx motorFrontLeft;
-    DcMotorEx motorFrontRight;
-    DcMotorEx motorBackLeft;
-    DcMotorEx motorBackRight;
-
     private static final boolean USE_WEBCAM = true;
 
     private TfodProcessor tfod;
@@ -36,71 +31,76 @@ public class AutonomousBase extends LinearOpMode {
 
     private VisionPortal visionPortal;
 
+    DcMotorEx motorFrontLeft;
+    DcMotorEx motorFrontRight;
+    DcMotorEx motorBackLeft;
+    DcMotorEx motorBackRight;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        motorFrontLeft = hardwareMap.get(DcMotorEx.class, "motorFrontLeft");
-        motorFrontRight = hardwareMap.get(DcMotorEx.class, "motorFrontRight");
+        // region Initialize Motors
         motorBackLeft = hardwareMap.get(DcMotorEx.class, "motorBackLeft");
         motorBackRight = hardwareMap.get(DcMotorEx.class, "motorBackRight");
+        motorFrontLeft = hardwareMap.get(DcMotorEx.class, "motorFrontLeft");
+        motorFrontRight = hardwareMap.get(DcMotorEx.class, "motorFrontRight");
 
-        motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        motorFrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorFrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorBackLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorBackRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorFrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorFrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motorFrontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         motorBackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorFrontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        // endregion
 
-        initTfod();
-        initAprilTag();
+        initDetection();
 
-        waitForStart();
+        while (!isStopRequested()) {
+            if (opModeInInit()) {
+                telemetry.addLine("Preview Camera Stream by pressing the three dots in the top right then press 'Camera Stream'");
+                telemetry.addLine("\n----------------------------------------");
+            }
 
-        while (opModeIsActive()) {
-            telemetryTfod();
-            telemetryAprilTag();
-            
+            if (visionPortal.getProcessorEnabled(aprilTag)) {
+                telemetry.addLine("Dpad Left to disable AprilTag");
+                telemetryAprilTag();
+            } else {
+                telemetry.addLine("Dpad Right to enable AprilTag");
+            }
+
+            telemetry.addLine("\n----------------------------------------");
+
+            if (visionPortal.getProcessorEnabled(tfod)) {
+                telemetry.addLine("Dpad Down to disable TFOD");
+                telemetryTfod();
+            } else {
+                telemetry.addLine("Dpad Up to enable TFOD");
+            }
+
             telemetry.update();
-            
-            if (gamepad1.back) {
-                visionPortal.stopStreaming();
-            } else if (gamepad1.start) {
-                visionPortal.resumeStreaming();
+
+            if (gamepad1.dpad_left) {
+                visionPortal.setProcessorEnabled(aprilTag, false);
+            } else if (gamepad1.dpad_right) {
+                visionPortal.setProcessorEnabled(aprilTag, true);
+            }
+
+            if (gamepad1.dpad_down) {
+                visionPortal.setProcessorEnabled(tfod, false);
+            } else if (gamepad1.dpad_up) {
+                visionPortal.setProcessorEnabled(tfod, true);
             }
 
             sleep(20);
         }
-
-        visionPortal.close();
     }
 
-    private void initTfod() {
-        tfod = new TfodProcessor.Builder().build();
-
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Front Camera"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
-
-        builder.setCameraResolution(new Size(1280, 720));
-        builder.enableLiveView(true);
-        builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-        builder.setAutoStopLiveView(false);
-        builder.addProcessor(tfod);
-
-        visionPortal = builder.build();
-    }
-
-    private void initAprilTag() {
+    private void initDetection() {
         aprilTag = new AprilTagProcessor.Builder()
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
@@ -111,41 +111,23 @@ public class AutonomousBase extends LinearOpMode {
                 .setLensIntrinsics(1445.262036, 1458.020517, 624.518936, 335.987846)
                 .build();
 
-        VisionPortal.Builder builder = new VisionPortal.Builder();
+        tfod = new TfodProcessor.Builder().build();
+        tfod.setMinResultConfidence(0.75f);
 
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Front Camera"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
-
-        builder.setCameraResolution(new Size(1280, 720));
-        builder.enableLiveView(true);
-        builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-        builder.setAutoStopLiveView(false);
-        builder.addProcessor(aprilTag);
-
-        visionPortal = builder.build();
-    }
-
-    private void telemetryTfod() {
-        List<Recognition> currentRecognitions = tfod.getRecognitions();
-        telemetry.addData("# Objects Detected:", currentRecognitions.size());
-
-        for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2;
-            double y = (recognition.getTop() + recognition.getBottom()) / 2;
-
-            telemetry.addData("\nImage:", "%s (%.0f %% Confidence)", recognition.getLabel(), recognition.getConfidence() * 100);
-            telemetry.addData("- Position:", "%.0f / %.0f", x, y);
-            telemetry.addData("- Size:", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
-        }
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Front Camera"))
+                .setCameraResolution(new Size(1280, 720))
+                .enableLiveView(true)
+                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+                .setAutoStopLiveView(false)
+                .addProcessors(tfod, aprilTag)
+                .build();
     }
 
     @SuppressLint("DefaultLocale")
     private void telemetryAprilTag() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
+        telemetry.addData("\n# AprilTags Detected", currentDetections.size());
 
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
@@ -162,5 +144,19 @@ public class AutonomousBase extends LinearOpMode {
         telemetry.addLine("\nKey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         telemetry.addLine("RBE = Range, Bearing & Elevation");
+    }
+
+    private void telemetryTfod() {
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+        telemetry.addData("\n# Objects Detected:", currentRecognitions.size());
+
+        for (Recognition recognition : currentRecognitions) {
+            double x = (recognition.getLeft() + recognition.getRight()) / 2;
+            double y = (recognition.getTop() + recognition.getBottom()) / 2;
+
+            telemetry.addData("\nImage:", "%s (%.0f %% Confidence)", recognition.getLabel(), recognition.getConfidence() * 100);
+            telemetry.addData("- Position:", "%.0f / %.0f", x, y);
+            telemetry.addData("- Size:", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+        }
     }
 }
