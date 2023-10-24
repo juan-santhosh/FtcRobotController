@@ -135,7 +135,7 @@ public class DriverControl extends LinearOpMode {
             servoBaseLeft.setPosition(baseLeftPos);
             servoBaseRight.setPosition(baseRightPos);
 
-            motorIntake.setPower(gamepad1.x ? 1 : 0);
+            motorIntake.setPower(gamepad1.x ? 1 : (gamepad1.b ? -1 : 0));
 
             telemetry.addData("\nDesired Claw", clawPos);
             telemetry.addData("Actual Claw", servoClaw.getPosition());
