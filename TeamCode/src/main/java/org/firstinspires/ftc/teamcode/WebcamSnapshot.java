@@ -33,7 +33,7 @@ public class WebcamSnapshot extends LinearOpMode {
 
             lastX = x;
 
-            telemetry.addLine("######## Camera Capture Utility ########");
+            telemetry.addLine("-------- Camera Capture Utility --------");
             telemetry.addLine(String.format(Locale.UK, " > Resolution: %dx%d", 1280, 720));
             telemetry.addLine(" > Press X to capture a frame");
             telemetry.addData(" > Camera Status", portal.getCameraState());
