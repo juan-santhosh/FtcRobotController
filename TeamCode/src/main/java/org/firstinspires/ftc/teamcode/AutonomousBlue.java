@@ -54,10 +54,6 @@ public class AutonomousBlue extends LinearOpMode {
     final double WHEEL_CIRCUMFERENCE = Math.PI * 0.096;
     final double TICKS_PER_REVOLUTION = 537.7;
 
-    int[] detectTags = {1, 2, 3};
-
-    boolean parked;
-
     @Override
     public void runOpMode() throws InterruptedException {
         // region Initialize Motors and Servos
@@ -111,7 +107,7 @@ public class AutonomousBlue extends LinearOpMode {
                 telemetry.addLine("Preview Camera Stream by pressing the three dots in the top right then press 'Camera Stream'");
                 telemetry.addLine("\n----------------------------------------");
             } else {
-                if (!parked) {
+                /* if (!parked) {
                     grabPixel.start();
 
                     strafe(0.61, 0);
@@ -153,6 +149,15 @@ public class AutonomousBlue extends LinearOpMode {
                             break;
                         }
                     }
+                } */
+
+                List<Recognition> currentRecognitions = tfod.getRecognitions();
+
+                for (Recognition recognition : currentRecognitions) {
+                    double x = (recognition.getLeft() + recognition.getRight()) / 2;
+                    int detectTag = x <= 426 ? 0 : (x > 426 && x < 853 ? 1 : 2);
+
+                    telemetry.addData("Detect Tag", detectTag);
                 }
             }
 
