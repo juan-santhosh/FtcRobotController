@@ -312,10 +312,8 @@ public class DriverControlFieldCentric extends LinearOpMode {
             if (gamepad1.start) imu.resetYaw();
 
             double zRot = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS); // - Math.PI/30
-            double xRes = x * Math.cos(-zRot) - y * Math.sin(-zRot);
+            double xRes = x * Math.cos(-zRot) - y * Math.sin(-zRot) * 1.1;
             double yRes = x * Math.sin(-zRot) + y * Math.cos(-zRot);
-
-            xRes *= 1.1;
 
             double maxRes = Math.max(Math.abs(yRes) + Math.abs(xRes) + Math.abs(rot), 1);
             double backLeftPower   = (yRes - xRes + rot) / maxRes;
