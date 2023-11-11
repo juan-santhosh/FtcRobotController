@@ -122,6 +122,23 @@ public class DriverControlFieldCentric extends LinearOpMode {
             presetActive = false;
         });
 
+        Thread retractArm = new Thread(() -> {
+            presetActive = true;
+
+            clawPos = MAX_CLAW;
+            servoClaw.setPosition(clawPos);
+
+            sleep(500);
+
+            baseLeftPos = 0.5;
+            baseRightPos = 1.0 - baseLeftPos;
+
+            servoBaseLeft.setPosition(baseLeftPos);
+            servoBaseRight.setPosition(baseRightPos);
+
+            presetActive = false;
+        });
+
         Thread placePixel = new Thread(() -> {
             presetActive = true;
 
@@ -211,7 +228,7 @@ public class DriverControlFieldCentric extends LinearOpMode {
 
         waitForStart();
 
-        grabPixel.start();
+        retractArm.start();
 
         if (isStopRequested()) return; // Terminates program when STOP pressed.
 
@@ -257,7 +274,8 @@ public class DriverControlFieldCentric extends LinearOpMode {
                 }
             }
 
-            servoClaw.setPosition(clawPos); // Sets the servos to the calculated positions.
+            // Sets the servos to the calculated positions.
+            servoClaw.setPosition(clawPos);
             servoPitch.setPosition(pitchPos);
             servoBaseLeft.setPosition(baseLeftPos);
             servoBaseRight.setPosition(baseRightPos);
@@ -291,11 +309,9 @@ public class DriverControlFieldCentric extends LinearOpMode {
             double y = gamepad1.left_stick_y;
             double rot = -gamepad1.right_stick_x;
 
-            if (gamepad1.start) {
-                imu.resetYaw();
-            }
+            if (gamepad1.start) imu.resetYaw();
 
-            double zRot = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS); // + Math.PI/30
+            double zRot = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS); // - Math.PI/30
             double xRes = x * Math.cos(-zRot) - y * Math.sin(-zRot);
             double yRes = x * Math.sin(-zRot) + y * Math.cos(-zRot);
 
