@@ -280,6 +280,10 @@ public class AutonomousBlue extends LinearOpMode {
             if (motorSliderLeft.getTargetPosition() == motorSliderLeft.getCurrentPosition()) {
                 motorSliderLeft.setPower(0);
                 motorSliderRight.setPower(0);
+
+                motorSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
                 break;
             }
         }
