@@ -155,7 +155,7 @@ public class AutonomousBlue extends LinearOpMode {
 
                 for (Recognition recognition : currentRecognitions) {
                     double x = (recognition.getLeft() + recognition.getRight()) / 2;
-                    int detectTag = x <= 426 ? 0 : (x > 426 && x < 853 ? 1 : 2);
+                    int detectTag = x < 426 ? 0 : (x >= 426 && x < 853 ? 1 : 2);
 
                     telemetry.addData("Detect Tag", detectTag);
                 }
