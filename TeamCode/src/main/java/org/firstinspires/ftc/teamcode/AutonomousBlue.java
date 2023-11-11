@@ -307,6 +307,12 @@ public class AutonomousBlue extends LinearOpMode {
                 motorBackRight.setPower(0);
                 motorFrontLeft.setPower(0);
                 motorFrontRight.setPower(0);
+
+                motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
                 break;
             }
         }
