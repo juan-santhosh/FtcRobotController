@@ -266,7 +266,7 @@ public class DriverControlStabilisedPower extends LinearOpMode {
             }
 
             if (gamepad1.back) launchDrone.start();
-            if (gamepad2.back) latchHook.start();
+            if (gamepad2.back && gamepad2.start) latchHook.start();
 
             // Sets the servos to the calculated positions.
             servoClaw.setPosition(clawPos);
@@ -324,8 +324,8 @@ public class DriverControlStabilisedPower extends LinearOpMode {
 
     private double stabilisePower(double currentPower, double newPower) {
         final double MAX_DELTA_POWER = 0.7;
-
         double deltaPower = newPower - currentPower;
+
         return Math.abs(deltaPower) > MAX_DELTA_POWER ? currentPower + MAX_DELTA_POWER * deltaPower / Math.abs(deltaPower) : newPower;
     }
 }
