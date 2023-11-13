@@ -16,10 +16,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 public class IMUOrientation extends LinearOpMode {
     static RevHubOrientationOnRobot.LogoFacingDirection[] logoFacingDirections = RevHubOrientationOnRobot.LogoFacingDirection.values();
     static RevHubOrientationOnRobot.UsbFacingDirection[] usbFacingDirections = RevHubOrientationOnRobot.UsbFacingDirection.values();
+
     static int LAST_DIRECTION = logoFacingDirections.length - 1;
     static float TRIGGER_THRESHOLD = 0.2f;
 
     IMU imu;
+
     int logoFacingDirectionPosition;
     int usbFacingDirectionPosition;
     boolean orientationIsValid = true;
@@ -45,6 +47,7 @@ public class IMUOrientation extends LinearOpMode {
             if (gamepad1.left_bumper || gamepad1.right_bumper) {
                 if (!justChangedLogoDirection) {
                     justChangedLogoDirection = true;
+
                     if (gamepad1.left_bumper) {
                         logoFacingDirectionPosition--;
                         if (logoFacingDirectionPosition < 0) {
@@ -56,6 +59,7 @@ public class IMUOrientation extends LinearOpMode {
                             logoFacingDirectionPosition = 0;
                         }
                     }
+
                     updateOrientation();
                 }
             } else {
@@ -65,6 +69,7 @@ public class IMUOrientation extends LinearOpMode {
             if (gamepad1.left_trigger > TRIGGER_THRESHOLD || gamepad1.right_trigger > TRIGGER_THRESHOLD) {
                 if (!justChangedUsbDirection) {
                     justChangedUsbDirection = true;
+
                     if (gamepad1.left_trigger > TRIGGER_THRESHOLD) {
                         usbFacingDirectionPosition--;
                         if (usbFacingDirectionPosition < 0) {
@@ -76,6 +81,7 @@ public class IMUOrientation extends LinearOpMode {
                             usbFacingDirectionPosition = 0;
                         }
                     }
+
                     updateOrientation();
                 }
             } else {
@@ -106,6 +112,7 @@ public class IMUOrientation extends LinearOpMode {
     void updateOrientation() {
         RevHubOrientationOnRobot.LogoFacingDirection logo = logoFacingDirections[logoFacingDirectionPosition];
         RevHubOrientationOnRobot.UsbFacingDirection usb = usbFacingDirections[usbFacingDirectionPosition];
+
         try {
             RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logo, usb);
             imu.initialize(new IMU.Parameters(orientationOnRobot));
