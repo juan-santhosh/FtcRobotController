@@ -8,7 +8,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.Locale;
 
-@TeleOp(name = "Camera Frame Capture", group = "Utility")
+@TeleOp(name="Camera Frame Capture", group="Utility")
 public class WebcamSnapshot extends LinearOpMode {
     boolean lastX;
     int frameCount;
