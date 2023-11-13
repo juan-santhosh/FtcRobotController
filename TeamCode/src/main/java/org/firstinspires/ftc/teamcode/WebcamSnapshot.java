@@ -38,13 +38,8 @@ public class WebcamSnapshot extends LinearOpMode {
             telemetry.addLine(" > Press X to capture a frame");
             telemetry.addData(" > Camera Status", portal.getCameraState());
 
-            if (capReqTime != 0) {
-                telemetry.addLine("\nCaptured Frame.");
-            }
-
-            if (capReqTime != 0 && System.currentTimeMillis() - capReqTime > 1000) {
-                capReqTime = 0;
-            }
+            if (capReqTime != 0) telemetry.addLine("\nCaptured Frame.");
+            if (capReqTime != 0 && System.currentTimeMillis() - capReqTime > 1000) capReqTime = 0;
 
             telemetry.update();
         }
