@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="Field-Centric Drive", group="Driver Control")
+@TeleOp(name="Field-Centric Stabilised Drive", group="Driver Control")
 public class DriverControlStabilisedPower extends LinearOpMode {
     private boolean presetActive;
 
@@ -32,7 +32,7 @@ public class DriverControlStabilisedPower extends LinearOpMode {
 
     @Override
     // @Disabled tag goes here if you want to hide a program from the TeleOp list.
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         /* Runs on INIT press. Creates instances of DcMotor(Ex)s and Servos */
 
         DcMotor motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
@@ -189,6 +189,10 @@ public class DriverControlStabilisedPower extends LinearOpMode {
                 if (motorSliderLeft.getTargetPosition() == motorSliderLeft.getCurrentPosition()) {
                     motorSliderLeft.setPower(0);
                     motorSliderRight.setPower(0);
+
+                    motorSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
                     break;
                 }
             }
@@ -337,6 +341,7 @@ public class DriverControlStabilisedPower extends LinearOpMode {
 
     private double stabilisePower(double currentPower, double newPower) {
         final double MAX_POWER_DIFFERENCE = 0.7;
+
 
         double deltaPower = newPower - currentPower;
         return Math.abs(deltaPower) > MAX_POWER_DIFFERENCE ? currentPower + MAX_POWER_DIFFERENCE * deltaPower / Math.abs(deltaPower) : newPower;
