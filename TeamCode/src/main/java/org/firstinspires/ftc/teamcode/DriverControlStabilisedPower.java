@@ -257,10 +257,6 @@ public class DriverControlStabilisedPower extends LinearOpMode {
                     placePixel.start();
                 } else if (gamepad2.b) {
                     zeroArm.start();
-                } else if (gamepad1.back) {
-                    launchDrone.start();
-                } else if (gamepad2.back) {
-                    latchHook.start();
                 } else { // Manual control. Same notation as used for the sliders but a little more complex in this scenario.
                     clawPos += (gamepad2.dpad_up && clawPos < MAX_CLAW) ? SERVO_INCREMENT : ((gamepad2.dpad_down && clawPos > 0) ? -SERVO_INCREMENT : 0);
                     pitchPos += (gamepad2.right_stick_y > 0.1 && pitchPos < MAX_PITCH) ? SERVO_INCREMENT / 1.5 : ((gamepad2.right_stick_y < -0.1 && pitchPos > 0) ? -SERVO_INCREMENT / 1.5 : 0);
@@ -268,6 +264,9 @@ public class DriverControlStabilisedPower extends LinearOpMode {
                     baseRightPos = 1.0 - baseLeftPos;
                 }
             }
+
+            if (gamepad1.back) launchDrone.start();
+            if (gamepad2.back) latchHook.start();
 
             // Sets the servos to the calculated positions.
             servoClaw.setPosition(clawPos);
