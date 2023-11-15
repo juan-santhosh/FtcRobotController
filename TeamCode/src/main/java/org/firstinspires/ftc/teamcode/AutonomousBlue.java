@@ -3,9 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -155,7 +153,7 @@ public class AutonomousBlue extends LinearOpMode {
 
                 for (Recognition recognition : currentRecognitions) {
                     double x = (recognition.getLeft() + recognition.getRight()) / 2;
-                    int detectTag = x < 426 ? 0 : (x >= 426 && x < 853 ? 1 : 2);
+                    int detectTag = x < 426 ? 1 : (x >= 426 && x < 853 ? 2 : 3);
 
                     telemetry.addData("Detect Tag", detectTag);
                 }
@@ -282,7 +280,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorSliderRight.setPower(1);
 
         while (true) {
-            if (motorSliderLeft.getTargetPosition() == motorSliderLeft.getCurrentPosition()) {
+            if (!motorSliderLeft.isBusy()) {
                 motorSliderLeft.setPower(0);
                 motorSliderRight.setPower(0);
 
@@ -311,7 +309,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorFrontRight.setPower(1);
 
         while (true) {
-            if (motorBackRight.getTargetPosition() <= motorBackLeft.getCurrentPosition() && motorFrontLeft.getTargetPosition() <= motorFrontLeft.getCurrentPosition()) {
+            if (!motorBackRight.isBusy() && !motorFrontLeft.isBusy()) {
                 motorBackLeft.setPower(0);
                 motorBackRight.setPower(0);
                 motorFrontLeft.setPower(0);
@@ -329,16 +327,19 @@ public class AutonomousBlue extends LinearOpMode {
 
     private void drive(double distance, double distanceTarget) {
         motorBLPos = motorBRPos = motorFLPos = motorFRPos = calculatePos(distance, distanceTarget);
+        driveToPos.start();
     }
 
     private void strafe(double distance, double distanceTarget) {
         motorBRPos = motorFLPos = calculatePos(distance, distanceTarget);
         motorBLPos = motorFRPos = -calculatePos(distance, distanceTarget);
+        driveToPos.start();
     }
 
 //    private void rotate(double degrees) {
 //        motorBLPos = motorFRPos = calculatePos(degrees / 360, 0);
 //        motorBRPos = motorFLPos = -calculatePos(degrees / 360, 0);
+//        driveToPos.start();
 //    }
 
     private int calculatePos(double distance, double distanceTarget) {
@@ -356,7 +357,9 @@ public class AutonomousBlue extends LinearOpMode {
                 .setLensIntrinsics(1445.262036, 1458.020517, 624.518936, 335.987846)
                 .build();
 
-        tfod = new TfodProcessor.Builder().build();
+        tfod = new TfodProcessor.Builder()
+                .build();
+
         tfod.setMinResultConfidence(0.75f);
 
         visionPortal = new VisionPortal.Builder()

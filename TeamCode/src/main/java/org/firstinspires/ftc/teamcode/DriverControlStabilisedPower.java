@@ -183,7 +183,7 @@ public class DriverControlStabilisedPower extends LinearOpMode {
             motorSliderRight.setPower(1);
 
             while (true) {
-                if (motorSliderLeft.getTargetPosition() == motorSliderLeft.getCurrentPosition()) {
+                if (!motorSliderLeft.isBusy()) {
                     motorSliderLeft.setPower(0);
                     motorSliderRight.setPower(0);
 
