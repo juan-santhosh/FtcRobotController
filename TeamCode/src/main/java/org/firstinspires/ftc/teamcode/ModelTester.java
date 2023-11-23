@@ -16,7 +16,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 import org.tensorflow.lite.*;
-import org.tensorflow.lite.support.image.TensorImage;
+
 
 @TeleOp(name = "Camera Frame Capture", group = "Utility")
 public class ModelTester extends LinearOpMode {
