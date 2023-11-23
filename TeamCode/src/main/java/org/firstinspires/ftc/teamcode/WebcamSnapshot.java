@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.Locale;
+import java.util.Random;
 
 @TeleOp(name = "Camera Frame Capture", group = "Utility")
 public class WebcamSnapshot extends LinearOpMode {
@@ -19,15 +20,16 @@ public class WebcamSnapshot extends LinearOpMode {
         VisionPortal portal;
 
         portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Front Camera"))
+                .setCamera(hardwareMap.get(WebcamName.class, "FrontalCamera"))
                 .setCameraResolution(new Size(1280, 720))
                 .build();
+        Random rand = new Random();
 
         while (!isStopRequested()) {
             boolean x = gamepad1.x;
 
             if (x && !lastX) {
-                portal.saveNextFrameRaw(String.format(Locale.UK, "CameraFrameCapture-%06d", frameCount++));
+                portal.saveNextFrameRaw("CameraFrameCapture" + rand.nextInt(10000000));
                 capReqTime = System.currentTimeMillis();
             }
 

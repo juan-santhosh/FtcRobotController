@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="Field-Centric Drive", group="Driver Control")
+@TeleOp(name="Stabilized Power Drive", group="Driver Control")
 public class DriverControlStabilisedPower extends LinearOpMode {
     private boolean presetActive;
 
