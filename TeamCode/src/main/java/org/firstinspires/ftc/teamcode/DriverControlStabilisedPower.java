@@ -11,8 +11,28 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="Stabilized Power Drive", group="Driver Control")
+@TeleOp(name="Field-Centric Stabilised Drive", group="Driver Control")
 public class DriverControlStabilisedPower extends LinearOpMode {
+    DcMotor motorFrontLeft;
+    DcMotor motorFrontRight;
+    DcMotor motorBackLeft;
+    DcMotor motorBackRight;
+
+    DcMotor motorIntake;
+
+    DcMotorEx motorSliderLeft;
+    DcMotorEx motorSliderRight;
+
+    Servo servoClaw;
+    Servo servoPitch;
+    Servo servoBaseLeft;
+    Servo servoBaseRight;
+
+    Servo servoDrone;
+    Servo servoHook;
+
+    IMU imu;
+
     private boolean presetActive;
 
     private double sliderPos = 0;
@@ -30,22 +50,24 @@ public class DriverControlStabilisedPower extends LinearOpMode {
     private double currentFL;
     private double currentFR;
 
+    private final double MAX_CLAW = 0.22;
+
     @Override
     // @Disabled tag goes here if you want to hide a program from the TeleOp list.
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         /* Runs on INIT press. Creates instances of DcMotor(Ex)s and Servos */
 
-        DcMotor motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
-        DcMotor motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
-        DcMotor motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
-        DcMotor motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
+        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
+        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
 
         motorBackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         motorFrontRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        DcMotor motorIntake = hardwareMap.dcMotor.get("motorIntake");
-        DcMotorEx motorSliderLeft = hardwareMap.get(DcMotorEx.class, "motorLeftSlider");
-        DcMotorEx motorSliderRight = hardwareMap.get(DcMotorEx.class, "motorRightSlider");
+        motorIntake = hardwareMap.dcMotor.get("motorIntake");
+        motorSliderLeft = hardwareMap.get(DcMotorEx.class, "motorLeftSlider");
+        motorSliderRight = hardwareMap.get(DcMotorEx.class, "motorRightSlider");
 
         motorSliderLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorSliderRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -56,34 +78,23 @@ public class DriverControlStabilisedPower extends LinearOpMode {
         motorSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        Servo servoClaw = hardwareMap.servo.get("servoClaw");
-        Servo servoPitch = hardwareMap.servo.get("servoPitch");
-        Servo servoBaseLeft = hardwareMap.servo.get("servoBaseLeft");
-        Servo servoBaseRight = hardwareMap.servo.get("servoBaseRight");
+        servoClaw = hardwareMap.servo.get("servoClaw");
+        servoPitch = hardwareMap.servo.get("servoPitch");
+        servoBaseLeft = hardwareMap.servo.get("servoBaseLeft");
+        servoBaseRight = hardwareMap.servo.get("servoBaseRight");
 
-        Servo servoDrone = hardwareMap.servo.get("servoDrone");
+        servoDrone = hardwareMap.servo.get("servoDrone");
         servoDrone.setPosition(dronePos);
 
-        Servo servoHook = hardwareMap.servo.get("servoHook");
+        servoHook = hardwareMap.servo.get("servoHook");
         servoHook.setPosition(hookPos);
 
-        IMU imu = hardwareMap.get(IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
+
         imu.initialize(parameters);
-
-        /* Constants that hold the maximum position values of the motors and servos */
-
-        final int MAX_SLIDER = 3100;
-        final double MAX_CLAW = 0.22;
-        final double MAX_PITCH = 1;
-        final double MAX_BASE = 1;
-
-        final double SERVO_INCREMENT = 0.005;
-        final double SLIDER_SENSITIVITY = 20;
-
-        /* Presets that attempt to grab the pixels and retract the claw to it's starting position respectively. */
 
         Thread grabPixel = new Thread(() -> {
             presetActive = true;
@@ -186,9 +197,13 @@ public class DriverControlStabilisedPower extends LinearOpMode {
             motorSliderRight.setPower(1);
 
             while (true) {
-                if (motorSliderLeft.getTargetPosition() == motorSliderLeft.getCurrentPosition()) {
+                if (!motorSliderLeft.isBusy()) {
                     motorSliderLeft.setPower(0);
                     motorSliderRight.setPower(0);
+
+                    motorSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
                     break;
                 }
             }
@@ -228,9 +243,9 @@ public class DriverControlStabilisedPower extends LinearOpMode {
         if (isStopRequested()) return; // Terminates program when STOP pressed.
 
         while (opModeIsActive()) { // Runs on PLAY press. This section handles all player inputs.
+            double SLIDER_SENSITIVITY = 20;
             if (gamepad2.right_trigger > 0.1) { // Raises sliders on holding right trigger.
-                // The notation in the following code is: variable = condition ? value : other_value;
-                // meaning if condition true then value, else other_value.
+                int MAX_SLIDER = 3100;
                 sliderPos += sliderPos < MAX_SLIDER ? gamepad2.right_trigger * SLIDER_SENSITIVITY : 0;
                 sliderPower = gamepad2.right_trigger; // Sets the power of the slider motors to how deep the right trigger is being pressed.
             } else if (gamepad2.left_trigger > 0.1) { // Lowers sliders on holding left trigger.
@@ -256,18 +271,20 @@ public class DriverControlStabilisedPower extends LinearOpMode {
                     placePixel.start();
                 } else if (gamepad2.b) {
                     zeroArm.start();
-                } else if (gamepad1.back) {
-                    launchDrone.start();
-                } else if (gamepad2.back) {
-                    latchHook.start();
-                } else { // Manual control. Same notation as used for the sliders but a little more complex in this scenario.
-                    // The nested second expression after the colons is equivalent to an else if statement.
+                } else {
+                    double SERVO_INCREMENT = 0.005;
+                    double MAX_PITCH = 1;
+                    double MAX_BASE = 1;
+
                     clawPos += (gamepad2.dpad_up && clawPos < MAX_CLAW) ? SERVO_INCREMENT : ((gamepad2.dpad_down && clawPos > 0) ? -SERVO_INCREMENT : 0);
                     pitchPos += (gamepad2.right_stick_y > 0.1 && pitchPos < MAX_PITCH) ? SERVO_INCREMENT / 1.5 : ((gamepad2.right_stick_y < -0.1 && pitchPos > 0) ? -SERVO_INCREMENT / 1.5 : 0);
                     baseLeftPos += (gamepad2.left_stick_y > 0.1 && baseLeftPos < MAX_BASE) ? SERVO_INCREMENT : ((gamepad2.left_stick_y < -0.1 && baseLeftPos > 0) ? -SERVO_INCREMENT : 0);
                     baseRightPos = 1.0 - baseLeftPos;
                 }
             }
+
+            if (gamepad1.back) launchDrone.start();
+            if (gamepad2.back && gamepad2.start) latchHook.start();
 
             // Sets the servos to the calculated positions.
             servoClaw.setPosition(clawPos);
@@ -278,25 +295,13 @@ public class DriverControlStabilisedPower extends LinearOpMode {
             motorIntake.setPower(gamepad1.x ? 1 : (gamepad1.b ? -1 : 0)); // Intake motor control handled by the driver.
 
             // region Telemetry Logging
-            telemetry.addData("sliderPos", sliderPos);
-
-            telemetry.addData("\nDesired L", motorSliderLeft.getTargetPosition());
-            telemetry.addData("Actual L", motorSliderLeft.getCurrentPosition());
-
-            telemetry.addData("\nDesired R", motorSliderRight.getTargetPosition());
-            telemetry.addData("Actual R", motorSliderRight.getCurrentPosition());
-
-            telemetry.addData("\nDesired Claw", clawPos);
-            telemetry.addData("Actual Claw", servoClaw.getPosition());
-
-            telemetry.addData("\nDesired Pitch", pitchPos);
-            telemetry.addData("Actual Pitch", servoPitch.getPosition());
-
-            telemetry.addData("\nDesired Base Left", baseLeftPos);
-            telemetry.addData("Actual Base Left", servoBaseLeft.getPosition());
-
-            telemetry.addData("\nDesired Base Right", baseRightPos);
-            telemetry.addData("Actual Base Right", servoBaseRight.getPosition());
+            telemetry.addData("sliderPos =", sliderPos);
+            telemetry.addData("\nSlider Left", motorSliderLeft.getTargetPosition());
+            telemetry.addData("\nSlider Right", motorSliderRight.getTargetPosition());
+            telemetry.addData("\nBase Left", baseLeftPos);
+            telemetry.addData("\nBase Right", baseRightPos);
+            telemetry.addData("\nPitch", pitchPos);
+            telemetry.addData("\nClaw", clawPos);
             // endregion
 
             /* Field Centric Mecanum Drive */
@@ -316,10 +321,10 @@ public class DriverControlStabilisedPower extends LinearOpMode {
             double frontLeftPower  = (yRes + xRes + rot) / maxRes;
             double frontRightPower = (yRes - xRes - rot) / maxRes;
 
-            double stableBL = stabilisePower(backLeftPower, currentBL);
-            double stableBR = stabilisePower(backRightPower, currentBR);
-            double stableFL = stabilisePower(frontLeftPower, currentFL);
-            double stableFR = stabilisePower(frontRightPower, currentFR);
+            double stableBL = stabilisePower(currentBL, backLeftPower);
+            double stableBR = stabilisePower(currentBR, backRightPower);
+            double stableFL = stabilisePower(currentFL, frontLeftPower);
+            double stableFR = stabilisePower(currentFR, frontRightPower);
 
             motorBackLeft.setPower(stableBL);
             motorBackRight.setPower(stableBR);
@@ -336,9 +341,9 @@ public class DriverControlStabilisedPower extends LinearOpMode {
     }
 
     private double stabilisePower(double currentPower, double newPower) {
-        final double MAX_POWER_DIFFERENCE = 0.7;
-
+        final double MAX_DELTA_POWER = 0.7;
         double deltaPower = newPower - currentPower;
-        return Math.abs(deltaPower) > MAX_POWER_DIFFERENCE ? currentPower + MAX_POWER_DIFFERENCE * deltaPower / Math.abs(deltaPower) : newPower;
+
+        return Math.abs(deltaPower) > MAX_DELTA_POWER ? currentPower + MAX_DELTA_POWER * deltaPower / Math.abs(deltaPower) : newPower;
     }
 }
