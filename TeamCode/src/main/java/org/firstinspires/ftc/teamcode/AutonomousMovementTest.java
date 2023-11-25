@@ -3,28 +3,29 @@ package org.firstinspires.ftc.teamcode;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
-import java.util.List;
-import java.util.stream.IntStream;
-
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-import org.firstinspires.ftc.vision.VisionPortal;
+
+import java.util.List;
 
 @Autonomous(name="Autonomous Blue", group="Autonomous Programs")
-public class AutonomousBlue extends LinearOpMode {
+public class AutonomousMovementTest extends LinearOpMode {
     private TfodProcessor tfod;
     private AprilTagProcessor aprilTag;
 
@@ -45,6 +46,8 @@ public class AutonomousBlue extends LinearOpMode {
     Servo servoBaseLeft;
     Servo servoBaseRight;
 
+    IMU imu;
+
     int motorBLPos, motorBRPos, motorFLPos, motorFRPos;
 
     double clawPos = 0.22, pitchPos = 0.55;
@@ -53,9 +56,7 @@ public class AutonomousBlue extends LinearOpMode {
     final double WHEEL_CIRCUMFERENCE = Math.PI * 0.096;
     final double TICKS_PER_REVOLUTION = 537.7;
 
-    boolean parked;
-
-    int[] detectTags = {1, 2, 3};
+    int detectTag = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -101,6 +102,13 @@ public class AutonomousBlue extends LinearOpMode {
         servoPitch = hardwareMap.servo.get("servoPitch");
         servoBaseLeft = hardwareMap.servo.get("servoBaseLeft");
         servoBaseRight = hardwareMap.servo.get("servoBaseRight");
+
+        imu = hardwareMap.get(IMU.class, "imu");
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+
+        imu.initialize(parameters);
         // endregion
 
         initDetection();
@@ -110,77 +118,56 @@ public class AutonomousBlue extends LinearOpMode {
                 telemetry.addLine("Preview Camera Stream by pressing the three dots in the top right then press 'Camera Stream'");
                 telemetry.addLine("\n----------------------------------------");
             } else {
-                if (!parked) {
-                    grabPixel.start();
+                switch (detectTag) {
+                    case 1:
+                        drive(0, 1, 0, 0.381);
+                        driveToPos.start();
+                        driveToPos.join();
 
-                    strafe(0.61, 0);
-                    driveToPos.start();
-                    driveToPos.join();
+                        // Place purple pixel here
+
+                        drive(0, 0, 1, 0.359);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        telemetry.addLine("Finished");
+                        break;
+                    case 2:
+                        drive(1, 0, 0, 0.305);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        drive(0, 1, 0, 0.381);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        // Place purple pixel here
+
+                        drive(0, 0, 1, 0.359);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        telemetry.addLine("Finished");
+                        break;
+                    case 3:
+                        drive(0, 1, 0, 0.381);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        drive(0, 0, 1, 0.359);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        drive(0, 1, 0, 0.610);
+                        driveToPos.start();
+                        driveToPos.join();
+
+                        // Place purple pixel here
+
+                        telemetry.addLine("Finished");
+                        break;
                 }
-
-                while (!parked) {
-                    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-
-                    for (AprilTagDetection detection : currentDetections) {
-                        if (IntStream.of(detectTags).anyMatch(x -> x == detection.id)) {
-                            drive(detection.ftcPose.y, (3 * 0.336 / Math.cos(Math.PI/6)) - 0.1);
-                            driveToPos.start();
-
-                            motorSliderLeft.setTargetPosition(-620);
-                            motorSliderRight.setTargetPosition(620);
-                            moveSliders.start();
-
-                            placePixel.start();
-                            placePixel.join();
-
-                            drive(-0.305, 0);
-                            driveToPos.start();
-
-                            zeroArm.start();
-
-                            motorSliderLeft.setTargetPosition(0);
-                            motorSliderRight.setTargetPosition(0);
-                            moveSliders.start();
-
-                            driveToPos.join();
-
-                            drive(detection.ftcPose.y, 0.05);
-                            driveToPos.start();
-                            driveToPos.join();
-
-                            parked = true;
-                            break;
-                        }
-                    }
-                }
-
-//                List<Recognition> currentRecognitions = tfod.getRecognitions();
-//
-//                for (Recognition recognition : currentRecognitions) {
-//                    double x = (recognition.getLeft() + recognition.getRight()) / 2;
-//                    int detectTag = x < 426 ? 1 : (x >= 426 && x < 853 ? 2 : 3);
-//
-//                    telemetry.addData("Detect Tag", detectTag);
-//                }
             }
-
-            if (visionPortal.getProcessorEnabled(aprilTag)) {
-                telemetry.addLine("\nDpad Left to disable AprilTag");
-                telemetryAprilTag();
-            } else {
-                telemetry.addLine("Dpad Right to enable AprilTag");
-            }
-
-            telemetry.addLine("\n----------------------------------------");
-
-            if (visionPortal.getProcessorEnabled(tfod)) {
-                telemetry.addLine("\nDpad Down to disable TFOD");
-                telemetryTfod();
-            } else {
-                telemetry.addLine("Dpad Up to enable TFOD");
-            }
-
-            telemetry.addLine("\n----------------------------------------");
 
             telemetry.addData("\nMotor BL Position", motorBackLeft.getCurrentPosition());
             telemetry.addData("Motor BR Position", motorBackRight.getCurrentPosition());
@@ -193,89 +180,8 @@ public class AutonomousBlue extends LinearOpMode {
             telemetry.addData("Motor FR Target Position", motorFrontRight.getTargetPosition());
 
             telemetry.update();
-
-            if (gamepad1.dpad_left) {
-                visionPortal.setProcessorEnabled(aprilTag, false);
-            } else if (gamepad1.dpad_right) {
-                visionPortal.setProcessorEnabled(aprilTag, true);
-            }
-
-            if (gamepad1.dpad_down) {
-                visionPortal.setProcessorEnabled(tfod, false);
-            } else if (gamepad1.dpad_up) {
-                visionPortal.setProcessorEnabled(tfod, true);
-            }
         }
     }
-
-    Thread grabPixel = new Thread(() -> {
-        clawPos = 0.11;
-        pitchPos = 0.878;
-        servoClaw.setPosition(clawPos);
-        servoPitch.setPosition(pitchPos);
-
-        sleep(500);
-
-        baseLeftPos = 0;
-        baseRightPos = 1;
-
-        servoBaseLeft.setPosition(baseLeftPos);
-        servoBaseRight.setPosition(baseRightPos);
-
-        sleep(1000);
-
-        clawPos = 0.22;
-        servoClaw.setPosition(clawPos);
-
-        sleep(500);
-
-        baseLeftPos = 0.5;
-        baseRightPos = 1.0 - baseLeftPos;
-
-        servoBaseLeft.setPosition(baseLeftPos);
-        servoBaseRight.setPosition(baseRightPos);
-    });
-
-    Thread placePixel = new Thread(() -> {
-        pitchPos = 0.555;
-        servoPitch.setPosition(pitchPos);
-
-        sleep(500);
-
-        baseLeftPos = 0.565;
-        baseRightPos = 1.0 - baseLeftPos;
-
-        servoBaseLeft.setPosition(baseLeftPos);
-        servoBaseRight.setPosition(baseRightPos);
-
-        sleep(500);
-
-        pitchPos = 0.345;
-        servoPitch.setPosition(pitchPos);
-
-        sleep(500);
-
-        clawPos = 0;
-        servoClaw.setPosition(clawPos);
-    });
-
-    Thread zeroArm = new Thread(() -> {
-        pitchPos = 0.555;
-        servoPitch.setPosition(pitchPos);
-
-        sleep(500);
-
-        baseLeftPos = 0.4;
-        baseRightPos = 1.0 - baseLeftPos;
-
-        servoBaseLeft.setPosition(baseLeftPos);
-        servoBaseRight.setPosition(baseRightPos);
-
-        sleep(500);
-
-        pitchPos = 0.878;
-        servoPitch.setPosition(pitchPos);
-    });
 
     Thread moveSliders = new Thread(() -> {
         motorSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -285,7 +191,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorSliderRight.setPower(1);
 
         while (true) {
-            if (!motorSliderLeft.isBusy()) {
+            if (!motorSliderLeft.isBusy() || !motorSliderRight.isBusy()) {
                 motorSliderLeft.setPower(0);
                 motorSliderRight.setPower(0);
 
@@ -314,7 +220,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorFrontRight.setPower(1);
 
         while (true) {
-            if (!motorBackRight.isBusy() && !motorFrontLeft.isBusy()) {
+            if (!motorBackLeft.isBusy() || !motorBackRight.isBusy() || !motorFrontLeft.isBusy() || !motorFrontRight.isBusy()) {
                 motorBackLeft.setPower(0);
                 motorBackRight.setPower(0);
                 motorFrontLeft.setPower(0);
@@ -330,25 +236,19 @@ public class AutonomousBlue extends LinearOpMode {
         }
     });
 
-    private void drive(double distance, double distanceTarget) {
-        motorBLPos = motorBRPos = motorFLPos = motorFRPos = calculatePos(distance, distanceTarget);
-        driveToPos.start();
+    private int calculatePos(double distance) {
+        return (int) (distance / WHEEL_CIRCUMFERENCE * TICKS_PER_REVOLUTION);
     }
 
-    private void strafe(double distance, double distanceTarget) {
-        motorBRPos = motorFLPos = calculatePos(distance, distanceTarget);
-        motorBLPos = motorFRPos = -calculatePos(distance, distanceTarget);
-        driveToPos.start();
-    }
+    private void drive(double x, double y, double rot, double distance) {
+        double zRot = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS); // - Math.PI/30
+        double xRes = x * Math.cos(-zRot) - y * Math.sin(-zRot) * 1.1, yRes = x * Math.sin(-zRot) + y * Math.cos(-zRot);
 
-//    private void rotate(double degrees) {
-//        motorBLPos = motorFRPos = calculatePos(degrees / 360, 0);
-//        motorBRPos = motorFLPos = -calculatePos(degrees / 360, 0);
-//        driveToPos.start();
-//    }
-
-    private int calculatePos(double distance, double distanceTarget) {
-        return (int) ((distance - distanceTarget) / WHEEL_CIRCUMFERENCE * TICKS_PER_REVOLUTION);
+        double maxRes = Math.max(Math.abs(yRes) + Math.abs(xRes) + Math.abs(rot), 1);
+        motorBLPos = calculatePos((yRes - xRes + rot) / maxRes * distance);
+        motorBRPos = calculatePos((yRes + xRes - rot) / maxRes * distance);
+        motorFLPos = calculatePos((yRes + xRes + rot) / maxRes * distance);
+        motorFRPos = calculatePos((yRes - xRes - rot) / maxRes * distance);
     }
 
     private void initDetection() {
