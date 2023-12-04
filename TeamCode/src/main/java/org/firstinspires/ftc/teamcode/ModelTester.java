@@ -1,23 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
-
 import java.util.Locale;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.core.Mat;
-
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
+
 
 @TeleOp(name = "Camera Frame Capture", group = "Utility")
 public class ModelTester extends LinearOpMode {
@@ -27,10 +23,11 @@ public class ModelTester extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+
+        // this op mode is for the red prop.
+        // with slight modifications, this can be used for the blue prop as well.
         VisionPortal portal;
-
         Net model = Dnn.readNetFromONNX("propPosDetector.onnx");
-
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "FrontalCamera"))
                 .setCameraResolution(new Size(256, 144))
@@ -50,6 +47,7 @@ public class ModelTester extends LinearOpMode {
                 Core.subtract(fullBlack, extractedChannel, extractedChannel);
                 for (int i = 0; i < 144; i++) {
                     for (int j = 0; j < 256; j++) {
+                        // for the blue prop, one might want to replace 30 (below) with some larger number
                         if (extractedChannel.get(i, j)[0] > 30) {
                             extractedChannel.put(i, j, 255);
                         }
