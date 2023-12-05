@@ -14,8 +14,7 @@ import org.opencv.core.Mat;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
 
-
-@TeleOp(name = "Camera Frame Capture", group = "Utility")
+@TeleOp(name = "Model Tester", group = "Utility")
 public class ModelTester extends LinearOpMode {
     boolean lastX;
     long capReqTime;
@@ -27,7 +26,7 @@ public class ModelTester extends LinearOpMode {
         // this op mode is for the red prop.
         // with slight modifications, this can be used for the blue prop as well.
         VisionPortal portal;
-        Net model = Dnn.readNetFromONNX("propPosDetector.onnx");
+        Net model = Dnn.readNet("\\propPosDetector.onnx");
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "FrontalCamera"))
                 .setCameraResolution(new Size(256, 144))
@@ -74,10 +73,8 @@ public class ModelTester extends LinearOpMode {
             telemetry.addData(" > Camera Status", portal.getCameraState());
 
             if (capReqTime != 0) {
-                telemetry.addLine("\nCaptured Frame.");
-                telemetry.addLine("\nLeft Probability: " + left_prob);
-                telemetry.addLine("Right Probability: " + right_prob);
-                telemetry.addLine("Centre Probability: " + center_prob);
+                telemetry.addLine("\nCaptured Frame.\nLeft Probability: " + left_prob +
+                        "\nRight Probability: " + right_prob + "\nCentre Probability: " + center_prob);
                 if (left_prob > center_prob && left_prob > right_prob) {
                     telemetry.addLine("\nConclusion: Left");
                 } else if (right_prob > center_prob && right_prob > left_prob) {

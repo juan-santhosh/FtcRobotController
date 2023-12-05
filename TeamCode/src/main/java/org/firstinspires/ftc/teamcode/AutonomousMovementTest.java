@@ -24,7 +24,7 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Autonomous Blue", group="Autonomous Programs")
+@Autonomous(name="Autonomous Movement Test", group="Autonomous Programs")
 public class AutonomousMovementTest extends LinearOpMode {
     private TfodProcessor tfod;
     private AprilTagProcessor aprilTag;
