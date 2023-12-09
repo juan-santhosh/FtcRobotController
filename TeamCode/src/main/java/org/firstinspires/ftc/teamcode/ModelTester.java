@@ -27,7 +27,7 @@ public class ModelTester extends LinearOpMode {
         // this op mode is for the red prop.
         // with slight modifications, this can be used for the blue prop as well.
         VisionPortal portal;
-        Net model = Dnn.readNet("\\propPosDetector.onnx");
+        Net model = Dnn.readNet("propPosDetector.onnx");
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "FrontalCamera"))
                 .setCameraResolution(new Size(256, 144))
